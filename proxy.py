@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import random
-import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 
 class Proxy:
     def __init__(self) -> None:
@@ -9,7 +9,7 @@ class Proxy:
         
     def main(self):
         proxylist = self.get_proxies()
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor() as executor:
             executor.map(self.extract, proxylist)
 
         final_choice = random.choice(self.usable_proxies)
