@@ -12,12 +12,12 @@ from proxy import Proxy
 class Scraper:
     def __init__(self, proxy=False) -> None:
         self.base = "https://www.beeradvocate.com"
-        self.beer_df = pd.DataFrame()
-        self.brewer_df = pd.DataFrame()
         self.proxy = proxy
-
-        if self.proxy == True:
+        if self.proxy:
             self.proxy = Proxy().main()
+
+        self.beer_df = []
+        self.brewer_df = []
 
         print(self.proxy)
 
@@ -33,14 +33,14 @@ class Scraper:
 
         self.parse(f"{category}")
         final_df = pd.merge(
-            self.beer_df, self.brewer_df, left_index=True, right_index=True
+            pd.DataFrame(self.beer_df), pd.DataFrame(self.brewer_df), left_index=True, right_index=True
         )
         final_df = final_df.fillna("na")
 
         return final_df.to_dict(orient="records")
 
     def make_request(self, url) -> requests:
-        if self.proxy == True:
+        if self.proxy:
             r = requests.get(
                 url, proxies={"http": self.proxy, "https": self.proxy}, timeout=5
             )
@@ -60,7 +60,7 @@ class Scraper:
         table = soup.table.find_all("tr")
 
         temp_links = []
-        for link in range(len(table)):
+        for link in range(2):
             for a in table[link].find_all("a", href=True):
                 temp_links.append(a["href"])
 
@@ -82,9 +82,7 @@ class Scraper:
                 beer_data.append(i.text)
 
             beer_data = self.beer_data_string_cleanup(beer_data)
-            self.beer_df = pd.concat(
-                [self.beer_df, pd.DataFrame([beer_data])], ignore_index=True
-            )
+            self.beer_df.append(beer_data)
 
         for brewer in tqdm(brewer_stats_links, desc="Scraping Brewers"):
             brewer_data = []
@@ -105,9 +103,7 @@ class Scraper:
                 brewer_data.append(i.text)
 
             brewer_data = self.brewer_data_string_cleanup(brewer_data)
-            self.brewer_df = pd.concat(
-                [self.brewer_df, pd.DataFrame([brewer_data])], ignore_index=True
-            )
+            self.brewer_df.append(brewer_data)
 
     def beer_data_string_cleanup(self, parsed_data: List[str]) -> List[str]:
         """Normalizes the list before appending to pandas
