@@ -9,7 +9,7 @@
     docker build -t "name" .
     docker run -p 8000:80 "name"
 
-#### To check if the API is working go to localhost:8000 on your browser. Currently, the only pages not working are the ones using country codes. To start scraping, use 
+#### To check if the API is working go to localhost:8000 on your browser. Currently, the only pages working are the ones not using country codes. To start scraping, use 
     localhost:8000/beer/top-rated
     localhost:8000/beer/trending
     localhost:8000/beer/top-new
