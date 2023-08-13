@@ -32,8 +32,29 @@ class Scraper:
         """
 
         self.parse(f"{category}")
+        self.brewer_df = [ele for ele in self.brewer_df if ele != []]
+
         final_df = pd.merge(
-            pd.DataFrame(self.beer_df), pd.DataFrame(self.brewer_df), left_index=True, right_index=True
+            pd.DataFrame(self.beer_df,
+                         columns=[
+                             "beer_name", "brewer_name", "location", "beer_style", "alcohol_percentage",
+                             "average_rating", "number_of_reviews", "number_of_ratings", "status", "last_rated",
+                             "date_added", "wants", "gets"
+                         ]),
+            pd.DataFrame(self.brewer_df,
+                         columns=[
+                             "brewer_name_2", "service_style", "st_address", "city", "state", "zip_code",
+                             "country", "phone_number", "website", "notes",
+                             "avg_rating_all_beers",
+                             "num_of_active_beers",
+                             "num_of_ratings_all_beers",
+                             "avg_rating_place",
+                             "num_reviews",
+                             "num_ratings",
+                             "pdev"
+                         ]),
+
+            left_index=True, right_index=True
         )
         final_df = final_df.fillna("na")
 
@@ -60,7 +81,7 @@ class Scraper:
         table = soup.table.find_all("tr")
 
         temp_links = []
-        for link in range(2):
+        for link in range(len(table)):
             for a in table[link].find_all("a", href=True):
                 temp_links.append(a["href"])
 
@@ -84,7 +105,7 @@ class Scraper:
             beer_data = self.beer_data_string_cleanup(beer_data)
             self.beer_df.append(beer_data)
 
-        for brewer in tqdm(brewer_stats_links, desc="Scraping Brewers"):
+        for brewer in brewer_stats_links:
             brewer_data = []
 
             data = self.make_request(self.base + brewer)
@@ -103,7 +124,13 @@ class Scraper:
                 brewer_data.append(i.text)
 
             brewer_data = self.brewer_data_string_cleanup(brewer_data)
+
+            if len(brewer_data) > 17:
+                brewer_data.clear()
+
             self.brewer_df.append(brewer_data)
+
+
 
     def beer_data_string_cleanup(self, parsed_data: List[str]) -> List[str]:
         """Normalizes the list before appending to pandas
