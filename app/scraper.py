@@ -1,11 +1,12 @@
 import re
-from typing import List, Dict
+from typing import Dict, List
 from unicodedata import normalize
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+
 from proxy import Proxy
 
 
@@ -13,6 +14,7 @@ class Scraper:
     def __init__(self, proxy=False) -> None:
         self.base = "https://www.beeradvocate.com"
         self.proxy = proxy
+
         if self.proxy:
             self.proxy = Proxy().main()
 
@@ -32,18 +34,22 @@ class Scraper:
         """
 
         self.parse(f"{category}")
-        self.brewer_df = [ele for ele in self.brewer_df if ele != []]
+        self.brewer_df = [x for x in self.brewer_df if x != []]
 
         final_df = pd.merge(
             pd.DataFrame(self.beer_df,
                          columns=[
-                             "beer_name", "brewer_name", "location", "beer_style", "alcohol_percentage",
-                             "average_rating", "number_of_reviews", "number_of_ratings", "status", "last_rated",
+                             "beer_name", "brewer_name",
+                             "location", "beer_style",
+                             "alcohol_percentage", "average_rating",
+                             "number_of_reviews", "number_of_ratings",
+                             "status", "last_rated",
                              "date_added", "wants", "gets"
                          ]),
             pd.DataFrame(self.brewer_df,
                          columns=[
-                             "brewer_name_2", "service_style", "st_address", "city", "state", "zip_code",
+                             "brewer_name_2", "service_style",
+                             "st_address", "city", "state", "zip_code",
                              "country", "phone_number", "website", "notes",
                              "avg_rating_all_beers",
                              "num_of_active_beers",
@@ -60,7 +66,7 @@ class Scraper:
 
         return final_df.to_dict(orient="records")
 
-    def make_request(self, url) -> requests:
+    def make_request(self, url: str) -> requests:
         if self.proxy:
             r = requests.get(
                 url, proxies={"http": self.proxy, "https": self.proxy}, timeout=5
@@ -105,7 +111,7 @@ class Scraper:
             beer_data = self.beer_data_string_cleanup(beer_data)
             self.beer_df.append(beer_data)
 
-        for brewer in brewer_stats_links:
+        for brewer in tqdm(brewer_stats_links, desc="Scraping Brewers"):
             brewer_data = []
 
             data = self.make_request(self.base + brewer)
@@ -129,8 +135,6 @@ class Scraper:
                 brewer_data.clear()
 
             self.brewer_df.append(brewer_data)
-
-
 
     def beer_data_string_cleanup(self, parsed_data: List[str]) -> List[str]:
         """Normalizes the list before appending to pandas

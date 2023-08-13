@@ -25,8 +25,10 @@ def _index(request: Request) -> dict:
 @app.get("/beer/{category}")
 def _data(category: str):
     try:
+        print("Try regular")
         beer_scraper = Scraper(proxy=True)
         return beer_scraper.main(category)
     except:
+        print("Running backup")
         beer_scraper = Scraper(proxy=False)
         return beer_scraper.main(category)
