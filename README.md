@@ -1,4 +1,4 @@
-# beer-scraper-rest-api
+# beer-scraper-api
  
 ### Scrapes beeradvocate.com and returns a JSON response with beer and brewer data.
 #### To run you can follow these commands
