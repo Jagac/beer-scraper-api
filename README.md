@@ -19,4 +19,3 @@
 
 #### Can be slow at times, depending on the proxy, up to 10 mins but generally expect 3-5 mins per page. Am looking to add country support so links like localhost:8000/beer/top-rated/br can work.
 
-#### This is just a start of an ELT pipeline: https://github.com/Jagac/elt-pipeline
