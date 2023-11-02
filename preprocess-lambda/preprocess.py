@@ -57,6 +57,20 @@ def apply_filter(data: list[dict]) -> list[dict]:
     return data
 
 
+def drop_tables() -> None:
+    with psycopg2.connect(
+        database="postgres",
+        user=rds_user,
+        password=rds_password,
+        host=rds_host,
+        port="5432",
+    ) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""drop table if exists brewers""")
+            cur.execute("""drop table if exists beers""")
+            cur.execute("""drop table if exists final_table""")
+
+
 def dump_to_rds(data: list[dict], table: str) -> None:
     """Load to postgres
 
@@ -72,6 +86,38 @@ def dump_to_rds(data: list[dict], table: str) -> None:
         port="5432",
     ) as conn:
         with conn.cursor() as cur:
+            cur.execute(
+                f"""create table if not exists beers(
+                        last_updated text,
+                        beer_name text,
+                        brewer_name text,
+                        beer_style text,
+                        location text,
+                        percent_alcohol float,
+                        beer_avg_score float,
+                        avg_across_all float,
+                        beer_number_of_reviews int,
+                        number_of_ratings int,
+                        date_added text,
+                        number_of_wants int,
+                        number_of_gots int,
+                        status text
+                        );"""
+            )
+
+            cur.execute(
+                f"""create table if not exists brewers(
+                        last_updated text,
+                        brewer_name text,
+                        brewer_avg_beer_score float,
+                        number_of_beers int,
+                        avg_brewer_score float,
+                        brewer_number_of_reviews int,
+                        city text,
+                        establishment_type text
+                        );"""
+            )
+
             query_sql = f""" insert into {table}
                 select * from json_populate_recordset(NULL::{table}, %s) """
             cur.execute(query_sql, (json.dumps(data),))
@@ -114,6 +160,7 @@ class PreprocessBeers:
             Bucket=WRITE_BUCKET,
             Key="topnewbeer_" + datetime.today().strftime("%y%m%d") + ".json",
         )
+
         dump_to_rds(data, "beers")
 
 
@@ -155,6 +202,7 @@ class PreprocessBrewers:
 
 
 def main():
+    drop_tables()
     beer = PreprocessBeers()
     beer.start_preprocess()
 
