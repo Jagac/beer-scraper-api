@@ -6,9 +6,7 @@
 API: https://3q443u6uagldbupcftsthcd4jm0lpjmz.lambda-url.us-east-1.on.aws/docs
 
 
-<p>
-   <img src="bidemo.gif"/> 
-</p>
+![alt text](https://github.com/Jagac/beer-scraper-api/blob/main/bidemo.gif)
 
 
 ![alt text](architecture.png)
