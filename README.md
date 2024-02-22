@@ -5,7 +5,11 @@
 
 API: https://3q443u6uagldbupcftsthcd4jm0lpjmz.lambda-url.us-east-1.on.aws/docs
 
-![alt text](bidemo.gif)
+
+<p>
+   <img src="bidemo.gif"/> 
+</p>
+
 
 ![alt text](architecture.png)
 
